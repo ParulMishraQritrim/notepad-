@@ -1,0 +1,44 @@
+untracked : git is not tracking 
+unmodified : file has been tracked and modified  and commited
+staged :  stage before commit 
+modified : stage after unmodified and before staged 
+
+
+set username                                                           :   $ git config --global user.name Parul
+set email                                                              :   $ git config --global user.email parul.mishra@qritrim.com
+initializing a repo                                                    :   $ git initializing
+shows all files inside a repo                                          :   $ ls -lart
+shows status                                                           :     git status
+push file to staging area                                              :   $ git add changedfilename
+commit the changes                                                     :     git commit
+create a blank file                                                    :     touch filename.extension
+track all files and push it to staging area                            :     git add -A 
+commit all files                                                       :     git commit -m "message"
+clear terminal                                                         :     clear
+undo the changes and matches with the last commit                      :     git checkout filename.extension
+command line18 on all files                                            :     git checkout -f
+tells about all commits                                                :     git log
+last n commits                                                         :     git log -p -5(last 5 commits)
+quit                                                                   :     q
+shows the changes(compares working directory and staging area)         :     git diff
+compares staging area from last commit                                 :     git diff --staged                 
+directly commits all files                                             :     git commit -a -m "skipped staging area fixed"
+lists all files                                                        :     ls
+remove a file from staging area                                        :     git rm --cached filename.extension
+deletes a file completly                                               :     git rm filename.extension
+comapres the file after altering  and tells about staging area         :     git status -s
+adds the files after changes                                           :     git add filename
+ignore all files with specific name                                    :     git ignore filename
+checkout new branch                                                    :     git branch branchname
+shows all branches                                                     :     git branch
+switch to branches                                                     :     git checkout branchname
+merging branches                                                       :     git merge childbranchname(first switch to master branch)
+creates and takes to the new branch                                    :     git checkout -b branchname
+
+
+--create remote repository on github--
+add the remote repository of github on local                           :     git remote add origin link_of_remote_repository
+tells about push and fetch URL                                         :     git remote -v
+push the local repository                                              :     git push origin master
+push to other remote repository                                        :     git push -u origin master(branchname)
+

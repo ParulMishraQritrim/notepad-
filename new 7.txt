@@ -1,0 +1,9 @@
+server.context-path= /updatedStates
+server.servlet.session.timeout=3000s
+server.port = 8080
+
+
+
+spring.datasource.url =jdbc:postgresql://postgres-postgresql.postgres-qivrr.svc.cluster.local:5432/postgres
+spring.datasource.username =qritrim
+spring.datasource.password = aks-Wtt$

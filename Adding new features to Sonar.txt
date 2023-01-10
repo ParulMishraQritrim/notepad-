@@ -1,0 +1,415 @@
+sonar.properties:
+sonar.javascript.lcov.reportPaths=./coverage/lcov.info(commented previous line)
+from: sonar.test.inclusions=**/*.spec.ts,**/unittests/**/*Tests.cs    to    src/__test__/**/*.test.ts,src/**/*.spec.ts///////**/*.spec.ts
+
+
+Shows number of unit test cases:
+
+
+success : AddingNewFeatureSonar(github)
+build : 248 
+
+
+
+sonar-project.properties:
+
+sonar.host.url=http://sonarqube.qritrim.com
+# sonar.login=admin
+sonar.login=sqp_b74baea157f51e08df09c799f808b0d2db3d12db
+# sonar.password=qritrim-wtt
+sonar.projectKey=angulardummy
+sonar.sourceEncoding=UTF-8
+sonar.sources=src
+sonar.tests=src
+sonar.exclusions=**/node_modules/**
+sonar.test.inclusions=**/*.spec.ts      
+#sonar.typescript.lcov.reportPaths=coverage/lcov.info
+#sonar.testExecutionReportPaths=**/coverage/sonar_report.xml
+#sonar.javascript.lcov.reportPaths=**/coverage/report-lcov/lcov.info
+sonar.javascript.lcov.reportPaths=./coverage/lcov.info
+sonar.exclusions=**/coverage/**,**/MyCoverage/**,**/obj/**,**/*.dll,**/bin/**,**/dist/**,**/node_modules/**
+sonar.verbose=true
+sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+sonar.inclusions=src/**/*.ts
+
+# Test File Inclusions/Exclusions
+
+sonar.test.inclusions=src/**/*.spec.ts, src/**/*.test.ts
+
+# Linter
+sonar.ts.tslintconfigpath=.eslintrc.json
+sonar.eslint.reportPaths=reports/eslint/ts-lint-results.json
+
+# TypeScript Code covarge
+#sonar.javascript.lcov.reportPaths=reports/jest-coverage/unit/lcov.info
+sonar.testExecutionReportPaths=reports/sonar_report.xml
+
+
+
+
+
+
+
+
+
+
+Dockerfile:
+
+FROM 710264925055.dkr.ecr.ap-south-1.amazonaws.com/base-images:trion-ng-cli-latest-amd64 As builder
+
+USER root
+#RUN npm install sonar-scanner
+RUN apt-get update
+RUN apt install unzip wget -y
+
+#RUN npm run 
+#RUN apk add chromium
+#ENV CHROME_BIN='/usr/bin/chromium-browser'
+
+
+RUN apt-get update && apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
+
+#RUN apt-get update && apt-get install -y chromium
+RUN mkdir  /usr/src/app
+
+WORKDIR /usr/src/app
+#RUN ng update @angular/cli @angular/core
+
+#ENV CHROME_BIN=/usr/bin/chromium
+
+COPY package.json  ./
+
+RUN npm cache clean --force
+RUN rm -rf node_modules
+RUN rm -rf package-lock.json
+
+
+# RUN npm init -y &&  \
+#     npm i puppeteer \
+#     && groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+#     && mkdir -p /home/pptruser/Downloads \
+#     && chown -R pptruser:pptruser /home/pptruser \
+    
+RUN npm install 
+#RUN npm install && npm rebuild && npm test
+RUN wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip \
+    && unzip sonar-scanner-cli-4.2.0.1873-linux.zip
+RUN mv sonar-scanner-4.2.0.1873-linux /opt/sonar-scanner
+COPY sonar-project.properties /opt/sonar-scanner/conf/sonar-scanner.properties
+ENV PATH="$PATH:/opt/sonar-scanner/bin"
+RUN npm i sonar-scanner --save-dev
+RUN npm i karma-sonarqube-unit-reporter --save-dev
+RUN npm install karma-junit-reporter --save-dev
+RUN npm install puppeteer --save-dev
+#RUN npm i -D puppeteer karma-chrome-launcher
+RUN npm install --save express jest
+RUN npm install -D sonarqube-scanner jest-sonar-reporter supertest
+RUN npm install --save-dev babel-jest @babel/core @babel/preset-env
+RUN npm install --save-dev @babel/preset-typescript
+RUN npm uninstall angular-tag-cloud-module
+RUN npm install --save angular-tag-cloud-module@5.0.0
+
+
+#ARG INSTALL_DIR=.cache/puppeteer/chrome/linux-1056772/chrome-linux/
+#RUN cd  ${INSTALL_DIR} && chown root:root chrome_sandbox && chmod 4755 chrome_sandbox && cp -p chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
+
+
+
+
+# RUN apt update && apt install -y \ 
+#   chromium-browser
+#   #chromium-chromedriver
+
+
+# RUN curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# RUN apt-get install -y ./google-chrome-stable_current_amd64.deb
+# RUN rm google-chrome-stable_current_amd64.deb 
+
+
+RUN apt-get update
+RUN apt install -y chromium
+
+COPY . .
+RUN npm run test --single-run
+# RUN npm rebuild
+RUN chmod 777 /usr/src/app
+# RUN ng test --watch=false --code-coverage
+#RUN npm run test
+RUN npm run sonar
+RUN sonar-scanner  \
+    -Dsonar.projectKey=angulardummy  \
+    -Dsonar.sources=. \
+    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+    -Dsonar.host.url=https://sonarqube.qritrim.com \
+    -Dsonar.login=sqp_b74baea157f51e08df09c799f808b0d2db3d12db 
+
+# RUN apt-get update \
+#     && apt-get install -y wget gnupg \
+#     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+#     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+#     && apt-get update \
+#     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 \
+#       --no-install-recommends \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser
+
+# USER pptruser
+
+# WORKDIR /home/pptruser
+
+# COPY puppeteer-latest.tgz puppeteer-core-latest.tgz ./
+
+# # Install puppeteer and puppeteer-core into /home/pptruser/node_modules.
+# RUN npm i ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+#     && rm ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+#     && (node -e "require('child_process').execSync(require('puppeteer').executablePath() + ' --credits', {stdio: 'inherit'})" > THIRD_PARTY_NOTICES)
+
+# CMD ["google-chrome-stable"]
+
+# RUN ng test --no-watch --code-coverage
+# RUN ng build --configuration production --base-href   /qiplatform/ --deploy-url /qiplatform/ 
+#RUN node --max_old_space_size=4096 && ng build --prod --base-href   /qiplatform/ --deploy-url /qiplatform/
+# RUN node --max_old_space_size=4096 node_modules/@angular/cli/bin/ng build --prod --base-href   /qiplatform/ --deploy-url /qiplatform/
+# RUN ng test --watch=false --code-coverage
+RUN node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng build  --configuration production --base-href   /qiplatform/ --deploy-url /qiplatform/
+
+FROM 710264925055.dkr.ecr.ap-south-1.amazonaws.com/base-images:nginx-1.15.8-alpine
+
+RUN mkdir -p /etc/nginx/html/qiplatform
+
+COPY --from=builder /usr/src/app/dist/* /etc/nginx/html
+
+COPY --from=builder /usr/src/app/dist/* /etc/nginx/html/qiplatform
+
+COPY nginx.conf /etc/nginx/nginx.conf
+
+
+
+
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+
+
+
+
+
+
+
+karma.conf.json
+
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+module.exports = function (config) {
+  config.set({
+    basePath: '',
+    frameworks: ['jasmine', '@angular-devkit/build-angular'],
+    plugins: [
+      require('karma-jasmine'),
+      require('karma-chrome-launcher'),
+      require('karma-jasmine-html-reporter'),
+      require('karma-coverage'),
+      require('@angular-devkit/build-angular/plugins/karma'),
+     require('karma-sonarqube-unit-reporter'),
+      require('karma-junit-reporter')
+      //require('karma-coverage-istanbul-reporter')
+    ],
+//     browsers: ['Chrome','Chrome_without_security'],
+//     customLaunchers: {
+//       Chrome_without_security: {
+//         base: 'Chrome',
+//         flags: ['--disable-web-security', '--disable-site-isolation-trials']
+//       }
+//     },
+//      browsers: ['Chrome_without_sandbox','ChromeHeadless'],
+//      customLaunchers: {
+//        Chrome_without_sandbox: {
+//          base: 'ChromeHeadless',
+//          flags: ['--no-sandbox','--proxy-bypass-list=*',
+//           '--proxy-server=http://proxy.your.company'] // with sandbox it fails under Docker
+//   }
+//   },
+    browsers: ['Chrome'],
+     customLaunchers: {
+      ChromeNoSandboxHeadless: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+    }
+},
+    captureTimeout: 180000,
+    browserNoActivityTimeout: 100000, 
+    browserDisconnectTimeout : 10000,
+    browserDisconnectTolerance : 1,
+    client: {
+      clearContext: false // leave Jasmine Spec Runner output visible in browser
+    },
+    coverageReporter: {
+      dir: require('path').join(__dirname, './coverage'),
+      reports: ['lcovonly'],
+      subdir: '.',
+      reporters: [{ type: 'lcov' }],
+    },
+    reporters: ['progress', 'kjhtml', 'junit', 'sonarqubeUnit'],
+    sonarQubeUnitReporter: {
+      sonarQubeVersion: 'LATEST',
+      outputFile: 'reports/sonar_report.xml',
+      overrideTestDescription: true,
+      testPaths: ['./src'],
+      testFilePattern: '.spec.ts',
+      useBrowserName: false
+    },
+    junitReporter: {
+      outputDir: '', // results will be saved as $outputDir/$browserName.xml
+      outputFile: undefined, // if included, results will be saved as $outputDir/$browserName/$outputFile
+      suite: '', // suite will become the package name attribute in xml testsuite element
+      useBrowserName: true, // add browser name to report and classes names
+      nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
+      classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
+      properties: {}, // key value pair of properties to add to the <properties> section of the report
+      xmlVersion: null // use '1' if reporting to be per SonarQube 6.2 XML format
+    },
+    port: 9876,
+    colors: true,
+    logLevel: config.LOG_INFO,
+    autoWatch: true,
+    singleRun: true
+  });
+};
+
+
+
+
+
+
+package.json
+
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "scripts": {
+   "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "lint": "ng lint",
+    "e2e": "ng e2e",
+    "sonar": "sonar-scanner",
+    "sonar-scanner": "node_modules/sonar-scanner/bin/sonar-scanner.bat",
+    "test": "ng test --browsers=ChromeNoSandboxHeadless",
+     "test-dev": "ng test --browser Chrome",
+    "qa-test": "ng test --watch=false --progress=false --browsers=ChromeHeadless --code-coverage --source-map=false"
+  },
+  "jest": {
+        "testEnvironment":  "node",
+        "verbose": true,
+        "coveragePathIgnorePatterns": [
+            "/node_modules/"
+        ],
+        "testResultsProcessor":  "jest-sonar-reporter"
+    },
+    "jestSonar": {
+        "reportPath":  "coverage",
+        "reportFile":  "test-reporter.xml",
+        "indent":  4
+    },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^14.2.0",
+    "@angular/cdk": "^11.2.13",
+    "@angular/common": "^14.2.0",
+    "@angular/compiler": "^14.2.0",
+    "@angular/core": "^14.2.0",
+    "@angular/forms": "^14.2.0",
+    "@angular/platform-browser": "^14.2.0",
+    "@angular/platform-browser-dynamic": "^14.2.0",
+    "@angular/router": "^14.2.0",
+    "@ngx-translate/core": "^13.0.0",
+    "@ngx-translate/http-loader": "^6.0.0",
+    "drawflow": "^0.0.59",
+    "moment": "^2.29.4",
+    "ngx-ui-loader": "^11.0.0",
+    "primeflex": "^2.0.0",
+    "primeicons": "^5.0.0",
+    "primeng": "^11.4.2",
+    "rxjs": "~6.6.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.11.4",
+    "chrome-aws-lambda": "^10.0.0",
+    "puppeteer-core": "^10.0.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^14.2.9",
+    "@angular/cli": "~14.2.9",
+    "@angular/compiler-cli": "^14.2.0",
+    "@types/drawflow": "^0.0.4",
+    "@types/jasmine": "~4.0.0",
+    "jasmine-core": "~4.3.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage": "~2.2.0",
+    "karma-coverage-istanbul-reporter": "^3.0.3",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.0.0",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-sonarqube-reporter": "^1.4.0",
+    "karma-sonarqube-unit-reporter": "0.0.21",
+    "typescript": "~4.7.2",
+     "puppeteer": "^10.0.0"
+  }
+}
+
+
+
+
+
+
+
+
+
+babel.conf.json
+
+module.exports = {
+  presets: [
+             ['@babel/preset-env', {targets: {node: 'current'}}],
+           '@babel/preset-typescript',
+           ],
+};
+
+
+
+
+
+
+
+
+.puppeteerrc.cjs
+
+const {join} = require('path');
+
+/**
+ * @type {import("puppeteer").Configuration}
+ */
+module.exports = {
+  // Changes the cache location for Puppeteer.
+  cacheDirectory: join(__dirname, '.cache', 'puppeteer'),
+  experiments: {
+    macArmChromiumEnabled: true,
+  }
+};
+const browser = await puppeteer.launch({
+	headless: false,
+	args: ["--no-sandbox",
+		"--disable-setuid-sandbox"]
+});
+
+
+
+
+
+
+
+
+
+
+
+
+frontend-qi/src/app/reports/sonarqube_report.xml:
+<?xml version="1.0" encoding="UTF-8"?>

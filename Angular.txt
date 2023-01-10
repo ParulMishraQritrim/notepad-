@@ -1,0 +1,13 @@
+Powershell scripting issue:
+
+
+Set-ExecutionPolicy RemoteSigned
+
+creates a new file at location of the folder  :   ng new nameOfFile
+connects the app with browser                 :   ng serve
+connects and opens the browser                :   ng serve --open
+installs bootstrap (on terminal)              :   npm install bootstrap (add in angular.json(build/styles) : "./node_modules/bootstrap/dist/css/bootsrap.min.css")
+installs jquery                               :   npm install jquery(add in angular.json(build/script) : "./node_modules/bootstrap/dist/js/bootstrap.js"
+creates new component or folder under app/ng  :   ng generate component folderName/fileName
+installs primeng                              :   npm install primeng --save
+gives icon of primeng                         :   npm install primeicons --save

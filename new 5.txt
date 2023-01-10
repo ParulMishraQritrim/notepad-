@@ -1,0 +1,12 @@
+first.eclipse.insert.msg = Data has been inserted successfully.
+first.eclipse.update.msg = data has been updated successfully
+first.eclipse.delete.msg = data has been deleted successfully 
+first.eclipse.showsuccess.msg = Data is retrieved successfully.
+first.eclipse.showByID.msg = data of respective ID has been shown successfully
+first.eclipse.wrongID.msg = ID not found in the database, please try inserting another ID.
+first.eclipse.getfailure.msg = There is an error in inserting the data.
+first.eclipse.updatefailure.msg = There is an error in updating the data. please connect with the admin
+first.eclipse.InsertFailure.msg = There is an error in inserting the data.
+first.eclipse.showFailure.msg = No data found 
+first.eclipse.duplicate.error.msg = this ID is already existing!
+first.eclipse.invalidID.error.msg = invalid state ID 

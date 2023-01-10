@@ -1,0 +1,184 @@
+package FirstEclipse.example.FirstEclipse.resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import FirstEclipse.example.FirstEclipse.model.ResponseStatus;
+import FirstEclipse.example.FirstEclipse.model.FERequestEntity;
+import FirstEclipse.example.FirstEclipse.model.FEResponseEntity;
+import FirstEclipse.example.FirstEclipse.model.states;
+import FirstEclipse.example.FirstEclipse.service.serviceClass;
+import FirstEclipse.example.FirstEclipse.util.propertyFile;
+import ch.qos.logback.classic.Logger;
+
+
+@RestController
+@RequestMapping("/eclipseState")
+public class resourceClass
+{
+	@Autowired
+	private serviceClass service;
+	
+	private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(resourceClass.class);
+ 
+	@Autowired
+	@Qualifier("messages")
+	propertyFile pfmsg;
+	
+   @GetMapping("/states")
+   public ResponseEntity<Object> getAllStates()
+   {
+	logger.info("get command triggered");
+	ResponseEntity<Object> response= null;
+	ResponseStatus respStatus = new ResponseStatus();
+	FEResponseEntity<List<states>> resp= new FEResponseEntity<List<states>>();
+	List<states> stateresp = new ArrayList<states>();
+	   stateresp =  service.showAll();
+	   if(stateresp!= null)
+	   {
+		   respStatus.setCode(pfmsg.getValue("first.eclipse.showsuccess.msg")); 
+		   respStatus.setMsg("successfully retrieved data!!");
+		   resp.setBody(stateresp);
+		   resp.setStatus(respStatus);
+		   response = new ResponseEntity<>(resp, HttpStatus.OK);
+		}
+	   else
+	   {
+		    respStatus.setCode(pfmsg.getValue("first.eclipse.showFailure.msg"));
+			respStatus.setMsg("no data found");
+			resp.setStatus(respStatus);
+			response = new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+			return response;
+	   }
+	   return response;
+   }
+   
+   @GetMapping("/states/{id}")
+   public ResponseEntity<Object>getOneState(@PathVariable(value="id") int id)
+   {
+	    logger.info("get by ID command triggered");
+	    ResponseEntity<Object> response= null;
+		ResponseStatus respStatus = new ResponseStatus();
+		FEResponseEntity<List<states>> resp= new FEResponseEntity<List<states>>();
+		List<states> stateresp = new ArrayList<states>();
+		stateresp = service.showOne(id);
+		if(stateresp!= null)
+		   {
+			    respStatus.setCode(pfmsg.getValue("first.eclipse.showByID.msg")); 
+			    respStatus.setMsg("successfully retrieved data!!");
+			    resp.setBody(stateresp);
+			    resp.setStatus(respStatus);
+			    response = new ResponseEntity<>(resp, HttpStatus.OK);
+			}
+		   else
+		   {
+			    respStatus.setCode(pfmsg.getValue("first.eclipse.showFailure.msg"));
+				respStatus.setMsg("no data found");
+				resp.setStatus(respStatus);
+				response = new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+				return response;
+		   }
+		   return response;
+   }
+   
+   @PostMapping("/states")
+   public ResponseEntity<Object> insertState(@RequestBody FERequestEntity<states> requestObject)
+   {
+	    logger.info("Post command triggered");
+	    ResponseEntity<Object> response = null;
+		FEResponseEntity<Integer> feResponseEntity = new FEResponseEntity<Integer>();
+		ResponseStatus respStatus = new ResponseStatus();
+		states data = requestObject.getBody();
+	    int uploaded =  service.insertAll(data);
+	    if (uploaded == 1) {
+	    	feResponseEntity.setBody(uploaded);
+			respStatus.setCode(pfmsg.getValue("first.eclipse.insert.msg"));
+			respStatus.setMsg("succesfully inserted");
+			feResponseEntity.setStatus(respStatus);
+			response = new ResponseEntity<>(feResponseEntity, HttpStatus.OK);
+		}else if(uploaded == 2){
+			respStatus.setCode(pfmsg.getValue("first.eclipse.duplicate.error.msg"));
+			respStatus.setMsg("this ID is already existing!");
+			feResponseEntity.setStatus(respStatus);
+			response = new ResponseEntity<>(feResponseEntity, HttpStatus.BAD_REQUEST);
+			return response;
+			
+		}else {
+			respStatus.setCode(pfmsg.getValue("first.eclipse.invalidID.error.msg"));
+			respStatus.setMsg(pfmsg.getValue("invalid state ID"));
+			feResponseEntity.setStatus(respStatus);
+			response = new ResponseEntity<>(feResponseEntity, HttpStatus.BAD_REQUEST);
+			return response;
+		}
+
+		return response;
+   }
+   
+   @PutMapping("/states/{id}")
+   public ResponseEntity<Object> updateState(@RequestBody FERequestEntity<states> requestObject, @PathVariable(value="id") int id)
+   {
+	   logger.info("Put command triggered");
+	    ResponseEntity<Object> response = null;
+		FEResponseEntity<Integer> feResponseEntity = new FEResponseEntity<Integer>();
+		ResponseStatus respStatus = new ResponseStatus();
+		states st= requestObject.getBody();
+		int updated = service.updatedState(st,id);
+		if (updated == 1)
+		{
+			    feResponseEntity.setBody(updated);
+				respStatus.setCode(pfmsg.getValue("first.eclipse.update.msg"));
+				respStatus.setMsg("data has been updated successfully");
+				feResponseEntity.setStatus(respStatus);
+				response = new ResponseEntity<>(feResponseEntity, HttpStatus.OK);
+		} 
+		else
+		{
+				respStatus.setCode(pfmsg.getValue("first.eclipse.updatefailure.msg"));
+				respStatus.setMsg("There is an error in updating the data. please connect with the admin");
+				feResponseEntity.setStatus(respStatus);
+				response = new ResponseEntity<>(feResponseEntity, HttpStatus.BAD_REQUEST);
+				return response;
+		}
+		return response;
+		
+   }
+   
+   @DeleteMapping("/states/{id}")
+   public ResponseEntity<Object> deleteState(@PathVariable(value="id") int id)
+   { 
+	    logger.info("Delete command triggered");
+	    FEResponseEntity<Integer> FEResponseEntity = new FEResponseEntity<Integer>();
+		ResponseEntity<Object> response = null;
+		ResponseStatus respStatus = new ResponseStatus();
+		int resp = service.delete(id) ;
+
+		if (resp > 0) {
+			FEResponseEntity.setBody(resp);
+			respStatus.setCode(pfmsg.getValue("first.eclipse.delete.msg"));
+			respStatus.setMsg("data has been deleted successfully");
+			FEResponseEntity.setStatus(respStatus);
+			response = new ResponseEntity<>(FEResponseEntity, HttpStatus.OK);
+		} else {
+			respStatus.setCode(pfmsg.getValue("first.eclipse.deletefailure.msg"));
+			respStatus.setMsg("There is an error in deleting the data");
+			FEResponseEntity.setStatus(respStatus);
+			response = new ResponseEntity<>(FEResponseEntity, HttpStatus.BAD_REQUEST);
+			return response;
+		}
+
+		return response;
+	  
+   }
+}
